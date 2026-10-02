@@ -9,6 +9,7 @@ struct PlateGameApp: App {
             MainGameView()
                 .environmentObject(state)
                 .preferredColorScheme(.dark)
+                .statusBarHidden(true)
                 .onAppear { state.load() }
         }
     }

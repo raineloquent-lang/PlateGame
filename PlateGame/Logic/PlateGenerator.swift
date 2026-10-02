@@ -4,14 +4,16 @@ enum PlateGenerator {
     static let letters = Array("АВЕКМНОРСТУХ")
     static let digits  = Array("0123456789")
     
-    /// Генерация номера с роллом редкости
+    /// Генерация номера с определением редкости по бонусам
     static func generate() -> (plate: LicensePlate, rarity: Rarity) {
-        let rarity = rollRarity()
+        // Пытаемся сгенерировать номер
+        // (не нужен while — редкость определяется после генерации)
         let plate = randomPlate()
+        let (_, rarity) = PlatePricer.evaluate(for: plate)
         return (plate, rarity)
     }
     
-    /// Просто случайный номер (для мелькания во время спина)
+    /// Просто случайный номер (для мелькания)
     static func randomVisualOnly() -> LicensePlate {
         randomPlate()
     }
@@ -24,18 +26,6 @@ enum PlateGenerator {
             letter3: String(letters.randomElement()!),
             region: RegionRegistry.allCodes.randomElement()!
         )
-    }
-    
-    /// Рулетка редкости по шансам
-    static func rollRarity() -> Rarity {
-        let total = Rarity.allCases.reduce(0.0) { $0 + $1.chance }
-        let roll = Double.random(in: 0..<total)
-        var cumulative = 0.0
-        for rarity in Rarity.allCases {
-            cumulative += rarity.chance
-            if roll < cumulative { return rarity }
-        }
-        return .common
     }
     
     /// Определение класса (блатности) номера
@@ -53,7 +43,7 @@ enum PlateGenerator {
         if l[0] == "А" && l[2] == "А" && l[1] != "А" {
             return .government
         }
-        // 4. Лёгкий "блатной номер" шанс
+        // 4. Лёгкий шанс "блатного номера"
         if Int.random(in: 1...1000) <= 30 {
             return .police
         }

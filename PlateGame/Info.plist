@@ -22,8 +22,17 @@
     <string>1</string>
     <key>LSRequiresIPhoneOS</key>
     <true/>
+    <key>UIRequiresFullScreen</key>
+    <true/>
+    <key>UIStatusBarHidden</key>
+    <true/>
+    <key>UIViewControllerBasedStatusBarAppearance</key>
+    <false/>
     <key>UILaunchScreen</key>
-    <dict/>
+    <dict>
+        <key>UIColorName</key>
+        <string></string>
+    </dict>
     <key>UIRequiredDeviceCapabilities</key>
     <array>
         <string>arm64</string>
@@ -34,16 +43,5 @@
     </array>
     <key>UIUserInterfaceStyle</key>
     <string>Dark</string>
-    <key>UIRequiresFullScreen</key>
-    <true/>
-    <key>UIStatusBarHidden</key> 
-    <true/>
-    <key>UIViewControllerBasedStatusBarAppearance</key>
-    <false/>
-    <key>UILaunchScreen</key>
-    <dict>
-        <key>UIColorName</key>
-        <string></string>
-    </dict>
 </dict>
 </plist>

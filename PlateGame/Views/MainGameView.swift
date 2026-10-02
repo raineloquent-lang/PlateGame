@@ -18,13 +18,13 @@ struct MainGameView: View {
         let rarity = state.isSpinning ? Rarity.common : state.currentRarity
         
         ZStack(alignment: .top) {
-            // ═══ ФОН — на весь экран ═══
+            // Фон — цвет на весь экран
             LinearGradient(colors: rarity.backgroundGradient,
                            startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea(.all)
                 .animation(.easeInOut(duration: 0.4), value: rarity)
             
-            // ═══ ТАП НА ВЕСЬ ЭКРАН ═══
+            // Тап на весь экран
             Color.clear
                 .contentShape(Rectangle())
                 .ignoresSafeArea(.all)
@@ -38,15 +38,13 @@ struct MainGameView: View {
                     state.spin()
                 }
             
-            // ═══ ОСНОВНОЙ КОНТЕНТ ═══
             VStack(spacing: 0) {
                 HeaderBar(balance: state.balance) { showCollection = true }
                     .padding(.horizontal, 20)
-                    .padding(.top, 55)
+                    .padding(.top, 60)
                 
                 Spacer()
                 
-                // Плашка редкости
                 if state.isSpinning {
                     RarityBarSkeleton()
                         .padding(.horizontal, 24)
@@ -57,7 +55,6 @@ struct MainGameView: View {
                         .padding(.bottom, 16)
                 }
                 
-                // Номер
                 PlateView(plate: shownPlate)
                     .scaleEffect(state.isSpinning ? 0.95 : stopScale)
                     .animation(
@@ -69,7 +66,6 @@ struct MainGameView: View {
                     .padding(.horizontal, 24)
                     .padding(.bottom, 16)
                 
-                // Цена
                 if state.isSpinning {
                     Text("...")
                         .font(.system(size: 24, weight: .bold))
@@ -83,7 +79,6 @@ struct MainGameView: View {
                         .padding(.bottom, 12)
                 }
                 
-                // Бонусы
                 VStack(spacing: 4) {
                     if !state.isSpinning {
                         ForEach(Array(calc.bonuses.enumerated()), id: \.offset) { idx, bonus in
@@ -105,7 +100,6 @@ struct MainGameView: View {
                 
                 Spacer()
                 
-                // Хинт
                 Text(state.isSpinning
                      ? "Крутится..."
                      : (state.isLocked ? "Ждём..." : "Тапни в любом месте"))
@@ -113,9 +107,7 @@ struct MainGameView: View {
                     .foregroundColor(Color.white.opacity(0.4))
                     .padding(.bottom, 40)
             }
-            .ignoresSafeArea(.all, edges: .bottom)
             
-            // ═══ ВЫЕЗЖАЮЩИЙ БАННЕР ═══
             if showBanner {
                 RecordBanner(price: state.recordPrice) { hideBanner() }
                     .padding(.horizontal)
@@ -126,6 +118,7 @@ struct MainGameView: View {
         .ignoresSafeArea(.all)
         .sheet(isPresented: $showCollection) {
             CollectionView()
+                .environmentObject(state)
         }
         .onReceive(state.$lastRecordEvent) { event in
             guard event != nil else { return }
@@ -138,8 +131,6 @@ struct MainGameView: View {
         }
     }
     
-    // MARK: - Анимации
-    
     private func resetAnimations() {
         displayedPrice = 0
         visibleBonuses = 0
@@ -149,13 +140,11 @@ struct MainGameView: View {
     private func animateStop(for plate: LicensePlate) {
         let calc = PlatePricer.calculate(for: plate, rarity: state.currentRarity)
         
-        // Отскок
         stopScale = 1.06
         withAnimation(.spring(response: 0.25, dampingFraction: 0.4)) {
             stopScale = 1.0
         }
         
-        // Рост цены
         let target = calc.total
         let steps = 25
         let stepValue = max(target / steps, 1)
@@ -165,15 +154,12 @@ struct MainGameView: View {
             }
         }
         
-        // Выезд бонусов
         for i in 1...max(calc.bonuses.count, 1) {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5 + Double(i) * 0.08) {
                 visibleBonuses = i
             }
         }
     }
-    
-    // MARK: - Баннер
     
     private func showRecordBanner() {
         bannerOffset = -200

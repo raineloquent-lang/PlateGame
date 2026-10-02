@@ -18,12 +18,12 @@ struct MainGameView: View {
         let rarity = state.isSpinning ? Rarity.common : state.currentRarity
         
         ZStack(alignment: .top) {
-            // ═══ ФОН ═══
+            // Фон
             LinearGradient(colors: rarity.backgroundGradient,
                            startPoint: .top, endPoint: .bottom)
                 .animation(.easeInOut(duration: 0.4), value: rarity)
             
-            // ═══ ТАП НА ВЕСЬ ЭКРАН ═══
+            // Тап на весь экран
             Color.clear
                 .contentShape(Rectangle())
                 .onTapGesture {
@@ -36,11 +36,10 @@ struct MainGameView: View {
                     state.spin()
                 }
             
-            // ═══ КОНТЕНТ ═══
             VStack(spacing: 0) {
                 HeaderBar(balance: state.balance) { showCollection = true }
                     .padding(.horizontal, 20)
-                    .padding(.top, 60)
+                    .padding(.top, 50)
                 
                 Spacer()
                 
@@ -107,7 +106,6 @@ struct MainGameView: View {
                     .padding(.bottom, 40)
             }
             
-            // ═══ БАННЕР РЕКОРДА ═══
             if showBanner {
                 RecordBanner(price: state.recordPrice) { hideBanner() }
                     .padding(.horizontal)
@@ -116,7 +114,7 @@ struct MainGameView: View {
             }
         }
         .ignoresSafeArea(.all)
-        .fullScreenCover(isPresented: $showCollection) {
+        .sheet(isPresented: $showCollection) {
             CollectionView()
         }
         .onReceive(state.$lastRecordEvent) { event in
@@ -129,8 +127,6 @@ struct MainGameView: View {
             }
         }
     }
-    
-    // ═══ АНИМАЦИИ ═══
     
     private func resetAnimations() {
         displayedPrice = 0

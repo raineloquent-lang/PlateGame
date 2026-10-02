@@ -14,11 +14,10 @@ struct PlateDetailView: View {
             
             ScrollView {
                 VStack(spacing: 0) {
-                    // ═══ Верхняя плашка ═══
+                    // Верхняя плашка
                     VStack(spacing: 10) {
                         PlateView(plate: item.plate)
                             .padding(.horizontal, 24)
-                            .padding(.top, 20)
                         
                         HStack(spacing: 4) {
                             ForEach(0..<5, id: \.self) { i in
@@ -32,15 +31,25 @@ struct PlateDetailView: View {
                             .foregroundColor(rarity.color)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 24)
+                    .padding(.top, 60)
+                    .padding(.bottom, 24)
                     .background(
                         LinearGradient(colors: rarity.backgroundGradient,
                                        startPoint: .top, endPoint: .bottom)
                     )
+                    .overlay(alignment: .topLeading) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 20, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(20)
+                                .padding(.top, 20)
+                        }
+                    }
                     
-                    // ═══ Основной блок ═══
                     VStack(alignment: .leading, spacing: 0) {
-                        // Класс + регион
                         VStack(spacing: 6) {
                             HStack(spacing: 8) {
                                 Text(calc.plateClass.rawValue)
@@ -63,7 +72,6 @@ struct PlateDetailView: View {
                         
                         Divider().background(Color.white.opacity(0.1))
                         
-                        // Базовая стоимость
                         HStack {
                             Text("Базовая стоимость")
                                 .foregroundColor(Color(white: 0.65))
@@ -75,7 +83,6 @@ struct PlateDetailView: View {
                         .padding(.horizontal, 20)
                         .padding(.vertical, 12)
                         
-                        // Бонусы
                         if !calc.bonuses.isEmpty {
                             Divider().background(Color.white.opacity(0.1))
                                 .padding(.horizontal, 20)
@@ -106,7 +113,6 @@ struct PlateDetailView: View {
                             .padding(.horizontal, 20)
                             .padding(.top, 8)
                         
-                        // 4 множителя
                         HStack(spacing: 0) {
                             MultiplierCell(label: "комбо", value: calc.comboMultiplier)
                             Divider().frame(height: 30).background(Color.white.opacity(0.1))
@@ -121,7 +127,6 @@ struct PlateDetailView: View {
                         Divider().background(Color.white.opacity(0.1))
                             .padding(.horizontal, 20)
                         
-                        // Итог
                         HStack {
                             Text("Цена номера")
                                 .font(.system(size: 16))
@@ -135,7 +140,6 @@ struct PlateDetailView: View {
                         .padding(.vertical, 16)
                     }
                     
-                    // ═══ Кнопки ═══
                     VStack(spacing: 10) {
                         if item.inSafe {
                             Button {
@@ -185,10 +189,10 @@ struct PlateDetailView: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 30)
                 }
             }
         }
-        .ignoresSafeArea(.all)   // ← ключевое — убирает чёрные полосы
+        .ignoresSafeArea(.all)
     }
 }

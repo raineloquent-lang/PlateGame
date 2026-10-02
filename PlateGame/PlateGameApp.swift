@@ -9,6 +9,8 @@ struct PlateGameApp: App {
             MainGameView()
                 .environmentObject(state)
                 .preferredColorScheme(.dark)
+                .statusBarHidden(true)                  // ← скрыть статус-бар
+                .persistentSystemOverlays(.hidden)      // ← скрыть индикатор home
                 .onAppear { state.load() }
         }
     }

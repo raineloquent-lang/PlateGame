@@ -48,7 +48,7 @@ enum Rarity: Int, Codable, CaseIterable {
         }
     }
     
-    /// Класс-множитель (главный коэффициент редкости)
+    /// Класс-множитель
     var classMultiplier: Double {
         switch self {
         case .common:    return 1.00
@@ -59,24 +59,20 @@ enum Rarity: Int, Codable, CaseIterable {
         }
     }
     
-    /// Шанс выпадения в %
-    var chance: Double {
-        switch self {
-        case .common:    return 53.81
-        case .uncommon:  return 37.96
-        case .rare:      return 7.98
-        case .epic:      return 0.24
-        case .legendary: return 0.05
-        }
-    }
+    // MARK: - Определение редкости
     
-    static func from(price: Int) -> Rarity {
-        switch price {
-        case ..<1_500:       return .common
-        case ..<10_000:      return .uncommon
-        case ..<100_000:     return .rare
-        case ..<1_000_000:   return .epic
-        default:             return .legendary
+    /// Определяем редкость по очкам бонусов и наличию блатного
+    static func determine(bonusPoints: Int, hasElite: Bool) -> Rarity {
+        if hasElite {
+            return bonusPoints >= 3 ? .legendary : .epic
+        } else {
+            switch bonusPoints {
+            case 0:      return .common
+            case 1:      return .uncommon
+            case 2:      return .rare
+            case 3:      return .epic
+            default:     return .legendary   // 4+
+            }
         }
     }
 }

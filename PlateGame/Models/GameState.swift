@@ -131,4 +131,53 @@ class GameState: ObservableObject {
         guard free > 0 else { return }
         
         for i in inventory.indices {
-            if free <= 0 { break
+            if free <= 0 { break }
+            if !inventory[i].inSafe {
+                let old = inventory[i]
+                inventory[i] = InventoryItem(
+                    id: old.id, plate: old.plate, price: old.price,
+                    rarity: old.rarity, inSafe: true
+                )
+                free -= 1
+            }
+        }
+        save()
+    }
+    
+    func moveAllFromSafe() {
+        for i in inventory.indices {
+            if inventory[i].inSafe {
+                let old = inventory[i]
+                inventory[i] = InventoryItem(
+                    id: old.id, plate: old.plate, price: old.price,
+                    rarity: old.rarity, inSafe: false
+                )
+            }
+        }
+        save()
+    }
+    
+    // MARK: - Persistence
+    
+    private let balKey = "pg_balance"
+    private let invKey = "pg_inventory"
+    private let recKey = "pg_record"
+    
+    func save() {
+        UserDefaults.standard.set(balance, forKey: balKey)
+        UserDefaults.standard.set(recordPrice, forKey: recKey)
+        if let data = try? JSONEncoder().encode(inventory) {
+            UserDefaults.standard.set(data, forKey: invKey)
+        }
+    }
+    
+    func load() {
+        let b = UserDefaults.standard.integer(forKey: balKey)
+        balance = b == 0 ? 50_000 : b
+        recordPrice = UserDefaults.standard.integer(forKey: recKey)
+        if let data = UserDefaults.standard.data(forKey: invKey),
+           let items = try? JSONDecoder().decode([InventoryItem].self, from: data) {
+            inventory = items
+        }
+    }
+}

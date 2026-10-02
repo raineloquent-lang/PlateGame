@@ -100,4 +100,47 @@ struct CollectionView: View {
     }
 }
 
-// PillButton и BarButton — без изменений
+struct PillButton: View {
+    let title: String
+    var active: Bool = false
+    var accent: Bool = false
+    var action: () -> Void = {}
+    
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 4) {
+                Text(title)
+                if active {
+                    Image(systemName: "arrowtriangle.down.fill")
+                        .font(.system(size: 8))
+                }
+            }
+            .font(.system(size: 13, weight: .medium))
+            .foregroundColor(accent || active ? .black : .white)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(accent ? Color.orange :
+                        active ? Color.white.opacity(0.9) : Color.white.opacity(0.1))
+            .clipShape(Capsule())
+        }
+    }
+}
+
+struct BarButton: View {
+    let title: String
+    var disabled: Bool = false
+    let action: () -> Void
+    
+    var body: some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(disabled ? Color(white: 0.4) : .white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color(white: 0.15))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .disabled(disabled)
+    }
+}

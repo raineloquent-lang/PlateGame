@@ -26,12 +26,13 @@ struct CollectionView: View {
             Color(white: 0.05).ignoresSafeArea()
             
             VStack(spacing: 0) {
+                // Хедер
                 HStack {
                     Text("Коллекция")
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.white)
                     Spacer()
-                    Text("\(state.inventory.count) / 50")
+                    Text("\(state.inventory.count) / 500")
                         .foregroundColor(Color(white: 0.6))
                 }
                 .padding()
@@ -42,6 +43,7 @@ struct CollectionView: View {
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.horizontal)
                 
+                // Сортировка
                 HStack(spacing: 10) {
                     PillButton(title: "Дата", active: sortBy == .date) { sortBy = .date }
                     PillButton(title: "Цена", active: sortBy == .price) { sortBy = .price }
@@ -52,6 +54,7 @@ struct CollectionView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 12)
                 
+                // Список
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(sorted) { item in
@@ -64,16 +67,18 @@ struct CollectionView: View {
                 }
             }
             
+            // Нижняя панель
             VStack {
                 Spacer()
                 HStack(spacing: 8) {
                     BarButton(title: "Выбрать всё") { }
                     BarButton(title: "В сейф") {
-                        for item in state.inventory where !item.inSafe {
-                            state.toggleSafe(item)
-                        }
+                        state.moveAllToSafe()
                     }
-                    BarButton(title: "Быстрая продажа") { showQuickSell = true }
+                    BarButton(title: "Из сейфа") {
+                        state.moveAllFromSafe()
+                    }
+                    BarButton(title: "Продажа") { showQuickSell = true }
                 }
                 .padding()
                 .background(Color(white: 0.08))
@@ -122,7 +127,7 @@ struct BarButton: View {
     var body: some View {
         Button(action: action) {
             Text(title)
-                .font(.system(size: 13, weight: .medium))
+                .font(.system(size: 12, weight: .medium))
                 .foregroundColor(disabled ? Color(white: 0.4) : .white)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 12)

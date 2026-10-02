@@ -2,6 +2,7 @@ import SwiftUI
 
 struct CollectionView: View {
     @EnvironmentObject var state: GameState
+    @Environment(\.dismiss) private var dismiss
     @State private var sortBy: SortMode = .rarity
     @State private var selectedItem: GameState.InventoryItem?
     @State private var showQuickSell = false
@@ -26,17 +27,27 @@ struct CollectionView: View {
             Color(white: 0.05)
             
             VStack(spacing: 0) {
-                // ─── Хедер ───
-                HStack {
+                // ─── Хедер с кнопкой Назад ───
+                HStack(spacing: 12) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "arrow.left")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.white)
+                    }
+                    
                     Text("Коллекция")
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.white)
+                    
                     Spacer()
+                    
                     Text("\(state.inventory.count) / \(state.inventoryLimit)")
                         .foregroundColor(Color(white: 0.6))
                 }
                 .padding(.horizontal)
-                .padding(.top, 20)
+                .padding(.top, 60)
                 .padding(.bottom, 8)
                 
                 Text("Стоимость коллекции \(totalValue.formatted()) ₽")
@@ -79,10 +90,11 @@ struct CollectionView: View {
                     BarButton(title: "Продажа") { showQuickSell = true }
                 }
                 .padding()
+                .padding(.bottom, 20)
                 .background(Color(white: 0.08))
             }
         }
-        .ignoresSafeArea(.all)        // ← убирает чёрные полосы
+        .ignoresSafeArea(.all)
         .sheet(item: $selectedItem) { item in
             PlateDetailView(item: item)
         }

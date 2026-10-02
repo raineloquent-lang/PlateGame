@@ -10,6 +10,7 @@ struct PlateGameApp: App {
                 .environmentObject(state)
                 .preferredColorScheme(.dark)
                 .statusBarHidden(true)
+                .persistentSystemOverlays(.hidden)
                 .onAppear { state.load() }
         }
     }

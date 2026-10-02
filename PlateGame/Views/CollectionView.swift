@@ -23,19 +23,20 @@ struct CollectionView: View {
     
     var body: some View {
         ZStack {
-            Color(white: 0.05).ignoresSafeArea()
+            Color(white: 0.05).ignoresSafeArea(.all)
             
             VStack(spacing: 0) {
-                // Хедер
                 HStack {
                     Text("Коллекция")
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.white)
                     Spacer()
-                    Text("\(state.inventory.count) / 500")
+                    Text("\(state.inventory.count) / \(state.inventoryLimit)")
                         .foregroundColor(Color(white: 0.6))
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.top, 60)
+                .padding(.bottom, 8)
                 
                 Text("Стоимость коллекции \(totalValue.formatted()) ₽")
                     .font(.system(size: 13))
@@ -43,7 +44,6 @@ struct CollectionView: View {
                     .frame(maxWidth: .infinity, alignment: .trailing)
                     .padding(.horizontal)
                 
-                // Сортировка
                 HStack(spacing: 10) {
                     PillButton(title: "Дата", active: sortBy == .date) { sortBy = .date }
                     PillButton(title: "Цена", active: sortBy == .price) { sortBy = .price }
@@ -54,7 +54,6 @@ struct CollectionView: View {
                 .padding(.horizontal)
                 .padding(.vertical, 12)
                 
-                // Список
                 ScrollView {
                     LazyVStack(spacing: 8) {
                         ForEach(sorted) { item in
@@ -67,20 +66,16 @@ struct CollectionView: View {
                 }
             }
             
-            // Нижняя панель
             VStack {
                 Spacer()
                 HStack(spacing: 8) {
                     BarButton(title: "Выбрать всё") { }
-                    BarButton(title: "В сейф") {
-                        state.moveAllToSafe()
-                    }
-                    BarButton(title: "Из сейфа") {
-                        state.moveAllFromSafe()
-                    }
+                    BarButton(title: "В сейф") { state.moveAllToSafe() }
+                    BarButton(title: "Из сейфа") { state.moveAllFromSafe() }
                     BarButton(title: "Продажа") { showQuickSell = true }
                 }
                 .padding()
+                .padding(.bottom, 20)
                 .background(Color(white: 0.08))
             }
         }

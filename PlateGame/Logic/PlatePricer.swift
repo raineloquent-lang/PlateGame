@@ -128,7 +128,7 @@ enum PlatePricer {
         if digitsAllEqual {
             result.append(Bonus(title: "3 одинаковые цифры", amount: 21_000, points: 2))
         } else if digitsMirror {
-            result.append(Bonus(title: "Зеркальные цифры", amount: 10_000, points: 1))
+            result.append(Bonus(title: "Зеркальные цифры", amount: 10_000, points: 2))
         } else if digitsTwoEqual {
             result.append(Bonus(title: "2 одинаковые цифры", amount: 7_000, points: 1))
         } else if isSmall {

@@ -19,10 +19,11 @@ struct MainGameView: View {
         
         ZStack(alignment: .top) {
             // Фон — цвет на весь экран
-            LinearGradient(colors: rarity.backgroundGradient,
-                           startPoint: .top, endPoint: .bottom)
-                .ignoresSafeArea(.all)
-                .animation(.easeInOut(duration: 0.4), value: rarity)
+LinearGradient(colors: rarity.backgroundGradient,
+               startPoint: .top, endPoint: .bottom)
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .ignoresSafeArea(.all)
+    .animation(.easeInOut(duration: 0.4), value: rarity)
             
             // Тап на весь экран
             Color.clear

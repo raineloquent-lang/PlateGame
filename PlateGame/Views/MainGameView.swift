@@ -19,12 +19,12 @@ struct MainGameView: View {
         
         NavigationStack {
             ZStack(alignment: .top) {
-                // Фон
+                // ═══ ФОН ═══
                 LinearGradient(colors: rarity.backgroundGradient,
                                startPoint: .top, endPoint: .bottom)
                     .animation(.easeInOut(duration: 0.4), value: rarity)
                 
-                // Тап на весь экран
+                // ═══ ТАП НА ВЕСЬ ЭКРАН ═══
                 Color.clear
                     .contentShape(Rectangle())
                     .onTapGesture {
@@ -37,10 +37,11 @@ struct MainGameView: View {
                         state.spin()
                     }
                 
+                // ═══ ОСНОВНОЙ КОНТЕНТ ═══
                 VStack(spacing: 0) {
                     HeaderBar(balance: state.balance) { showCollection = true }
                         .padding(.horizontal, 20)
-                        .padding(.top, 20)   // ← уменьшил с 60, т.к. safe area теперь убран
+                        .padding(.top, 20)
                     
                     Spacer()
                     
@@ -104,17 +105,18 @@ struct MainGameView: View {
                          : (state.isLocked ? "Ждём..." : "Тапни в любом месте"))
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Color.white.opacity(0.4))
-                        .padding(.bottom, 20)   // ← уменьшил с 60
+                        .padding(.bottom, 20)
                 }
                 
+                // ═══ БАННЕР РЕКОРДА ═══
                 if showBanner {
                     RecordBanner(price: state.recordPrice) { hideBanner() }
                         .padding(.horizontal)
-                        .padding(.top, 20)   // ← уменьшил
+                        .padding(.top, 20)
                         .offset(y: bannerOffset)
                 }
             }
-            .ignoresSafeArea(.all)   // ← КЛЮЧЕВОЕ! Игнорим safe area для ВСЕГО ZStack
+            .ignoresSafeArea(.all)
             .navigationDestination(isPresented: $showCollection) {
                 CollectionView()
             }
@@ -131,5 +133,53 @@ struct MainGameView: View {
         }
     }
     
-    // ... остальные методы без изменений
+    // ═══ АНИМАЦИИ ═══
+    
+    private func resetAnimations() {
+        displayedPrice = 0
+        visibleBonuses = 0
+        stopScale = 1.0
+    }
+    
+    private func animateStop(for plate: LicensePlate) {
+        let calc = PlatePricer.calculate(for: plate, rarity: state.currentRarity)
+        
+        stopScale = 1.06
+        withAnimation(.spring(response: 0.25, dampingFraction: 0.4)) {
+            stopScale = 1.0
+        }
+        
+        let target = calc.total
+        let steps = 25
+        let stepValue = max(target / steps, 1)
+        for i in 1...steps {
+            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 0.035) {
+                displayedPrice = min(stepValue * i, target)
+            }
+        }
+        
+        for i in 1...max(calc.bonuses.count, 1) {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5 + Double(i) * 0.08) {
+                visibleBonuses = i
+            }
+        }
+    }
+    
+    private func showRecordBanner() {
+        bannerOffset = -200
+        showBanner = true
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+            bannerOffset = 0
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) { hideBanner() }
+    }
+    
+    private func hideBanner() {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.9)) {
+            bannerOffset = -200
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            showBanner = false
+        }
+    }
 }

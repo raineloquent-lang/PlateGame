@@ -7,10 +7,9 @@ struct CollectionRow: View {
         let rarity = item.rarity
         
         HStack(spacing: 10) {
-            // Мини-номер
             PlateView(plate: item.plate, compact: true)
             
-            Spacer()
+            Spacer(minLength: 8)
             
             VStack(alignment: .trailing, spacing: 3) {
                 HStack(spacing: 4) {

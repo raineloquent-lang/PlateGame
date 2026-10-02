@@ -3,51 +3,43 @@ import UIKit
 
 @main
 struct PlateGameApp: App {
-    @StateObject private var state = GameState()
+    // Подключаем наш AppDelegate
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     var body: some Scene {
         WindowGroup {
-            RootView()
-                .environmentObject(state)
-                .preferredColorScheme(.dark)
-                .onAppear { state.load() }
+            // Заглушка, потому что всё делает AppDelegate
+            EmptyView()
         }
     }
 }
 
-struct RootView: UIViewControllerRepresentable {
-    @EnvironmentObject var state: GameState
+class AppDelegate: UIResponder, UIApplicationDelegate {
+    var window: UIWindow?
+    var state = GameState() // Создаём состояние здесь
     
-    func makeUIViewController(context: Context) -> UIViewController {
-        let hosting = UIHostingController(
-            rootView: AnyView(
-                MainGameView().environmentObject(state)
-            )
-        )
-        hosting.view.backgroundColor = UIColor(red: 0.04, green: 0.04, blue: 0.04, alpha: 1.0)
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        // ═══ ЯДЕРНЫЙ ФИКС — растягиваем view на весь экран ═══
-        hosting.view.insetsLayoutMarginsFromSafeArea = false
-        hosting.viewRespectsSystemMinimumLayoutMargins = false
-        hosting.additionalSafeAreaInsets = .zero
+        // 1. Создаём SwiftUI-представление и передаём в него состояние
+        let content = MainGameView()
+            .environmentObject(state)
+            .preferredColorScheme(.dark)
         
-        // Отключаем safe area на уровне navigation
-        hosting.view.overrideUserInterfaceStyle = .dark
+        // 2. Оборачиваем в UIKit-контроллер
+        let hosting = UIHostingController(rootView: content)
         
-        return hosting
-    }
-    
-    func updateUIViewController(_ uiViewController: UIViewController,
-                                context: Context) {
-        // Принудительно каждый раз
-        uiViewController.view.insetsLayoutMarginsFromSafeArea = false
-        uiViewController.additionalSafeAreaInsets = .zero
+        // 3. Настраиваем фон (чтобы не было чёрных полос, если градиент не долетит)
+        hosting.view.backgroundColor = UIColor(red: 0.05, green: 0.05, blue: 0.05, alpha: 1.0)
         
-        // Растянуть фрейм на весь window
-        if let window = uiViewController.view.window {
-            uiViewController.view.frame = window.bounds
-            uiViewController.view.setNeedsLayout()
-            uiViewController.view.layoutIfNeeded()
-        }
+        // 4. ⚡️ КЛЮЧЕВОЙ МОМЕНТ: Создаём окно с точными размерами экрана
+        let window = UIWindow(frame: UIScreen.main.bounds)
+        window.rootViewController = hosting
+        window.backgroundColor = UIColor(red: 0.05, green: 0.05, blue: 0.05, alpha: 1.0)
+        window.makeKeyAndVisible()
+        
+        self.window = window
+        
+        return true
     }
 }

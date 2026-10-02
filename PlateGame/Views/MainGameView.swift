@@ -19,18 +19,21 @@ struct MainGameView: View {
         
         NavigationStack {
             ZStack(alignment: .top) {
+                // Фон — на весь экран
                 LinearGradient(colors: rarity.backgroundGradient,
                                startPoint: .top, endPoint: .bottom)
-                    .ignoresSafeArea()
+                    .ignoresSafeArea(.all)
                     .animation(.easeInOut(duration: 0.4), value: rarity)
                 
-                // ═══ ВЕСЬ ЭКРАН ТАПАЕТСЯ ДЛЯ СПИНА ═══
+                // Тап на весь экран
                 Color.clear
                     .contentShape(Rectangle())
+                    .ignoresSafeArea(.all)
                     .onTapGesture {
                         guard !state.isSpinning,
                               !state.isLocked,
-                              state.balance >= state.spinCost else { return }
+                              state.balance >= state.spinCost,
+                              state.inventory.count < state.inventoryLimit else { return }
                         hideBanner()
                         resetAnimations()
                         state.spin()
@@ -39,23 +42,20 @@ struct MainGameView: View {
                 VStack(spacing: 0) {
                     HeaderBar(balance: state.balance) { showCollection = true }
                         .padding(.horizontal, 20)
-                        .padding(.top, 12)
-                    
-                    Color.clear.frame(height: 60)
+                        .padding(.top, 60)
                     
                     Spacer()
                     
                     if state.isSpinning {
                         RarityBarSkeleton()
                             .padding(.horizontal, 24)
-                            .padding(.bottom, 20)
+                            .padding(.bottom, 16)
                     } else {
                         RarityBar(rarity: rarity, price: calc.total)
                             .padding(.horizontal, 24)
-                            .padding(.bottom, 20)
+                            .padding(.bottom, 16)
                     }
                     
-                    // Номер — уменьшен
                     PlateView(plate: shownPlate)
                         .scaleEffect(state.isSpinning ? 0.95 : stopScale)
                         .animation(
@@ -65,28 +65,26 @@ struct MainGameView: View {
                             value: state.isSpinning
                         )
                         .padding(.horizontal, 24)
-                        .padding(.bottom, 20)
+                        .padding(.bottom, 16)
                     
-                    // Цена
                     if state.isSpinning {
                         Text("...")
-                            .font(.system(size: 26, weight: .bold))
+                            .font(.system(size: 24, weight: .bold))
                             .foregroundColor(Color.white.opacity(0.3))
-                            .padding(.bottom, 20)
+                            .padding(.bottom, 12)
                     } else {
                         Text("\(displayedPrice.formatted()) ₽")
-                            .font(.system(size: 26, weight: .bold, design: .rounded))
+                            .font(.system(size: 24, weight: .bold, design: .rounded))
                             .foregroundColor(rarity.color)
                             .animation(.easeOut(duration: 0.4), value: displayedPrice)
-                            .padding(.bottom, 20)
+                            .padding(.bottom, 12)
                     }
                     
-                    // Бонусы
-                    VStack(spacing: 5) {
+                    VStack(spacing: 4) {
                         if !state.isSpinning {
                             ForEach(Array(calc.bonuses.enumerated()), id: \.offset) { idx, bonus in
                                 Text(bonus.title)
-                                    .font(.system(size: 15))
+                                    .font(.system(size: 14))
                                     .foregroundColor(Color(white: 0.65))
                                     .multilineTextAlignment(.center)
                                     .opacity(idx < visibleBonuses ? 1 : 0)
@@ -98,20 +96,18 @@ struct MainGameView: View {
                             }
                         }
                     }
-                    .frame(minHeight: 90, alignment: .top)
+                    .frame(minHeight: 80, alignment: .top)
                     .padding(.horizontal, 24)
                     
                     Spacer()
                     
-                    // Хинт "тапни для спина" вместо кнопки
                     Text(state.isSpinning
                          ? "Крутится..."
                          : (state.isLocked ? "Ждём..." : "Тапни в любом месте"))
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Color.white.opacity(0.4))
-                        .padding(.bottom, 40)
+                        .padding(.bottom, 60)
                 }
-                .allowsHitTesting(true)
                 
                 if showBanner {
                     RecordBanner(price: state.recordPrice) { hideBanner() }

@@ -14,8 +14,8 @@ class GameState: ObservableObject {
     
     let spinCost = 3_000
     let sellPercent: Double = 0.80
-    let inventoryLimit = 500       // ← лимит инвентаря
-    let safeLimit = 5              // ← лимит сейфа
+    let inventoryLimit = 500
+    let safeLimit = 5
     
     private let spinDuration: Double = 0.5
     private let tickInterval: Double = 0.03
@@ -38,7 +38,6 @@ class GameState: ObservableObject {
     
     func spin() {
         guard !isSpinning, !isLocked, balance >= spinCost else { return }
-        // Лимит инвентаря
         guard inventory.count < inventoryLimit else { return }
         
         balance -= spinCost
@@ -113,7 +112,6 @@ class GameState: ObservableObject {
             let old = inventory[idx]
             let newSafe = !old.inSafe
             
-            // Проверка лимита сейфа
             if newSafe {
                 let currentSafeCount = inventory.filter { $0.inSafe }.count
                 guard currentSafeCount < safeLimit else { return }
@@ -127,61 +125,10 @@ class GameState: ObservableObject {
         }
     }
     
-    /// Переместить ВСЕ в сейф (до лимита)
     func moveAllToSafe() {
         let currentSafeCount = inventory.filter { $0.inSafe }.count
         var free = safeLimit - currentSafeCount
         guard free > 0 else { return }
         
         for i in inventory.indices {
-            if free <= 0 { break }
-            if !inventory[i].inSafe {
-                let old = inventory[i]
-                inventory[i] = InventoryItem(
-                    id: old.id, plate: old.plate, price: old.price,
-                    rarity: old.rarity, inSafe: true
-                )
-                free -= 1
-            }
-        }
-        save()
-    }
-    
-    /// Убрать ВСЁ из сейфа
-    func moveAllFromSafe() {
-        for i in inventory.indices {
-            if inventory[i].inSafe {
-                let old = inventory[i]
-                inventory[i] = InventoryItem(
-                    id: old.id, plate: old.plate, price: old.price,
-                    rarity: old.rarity, inSafe: false
-                )
-            }
-        }
-        save()
-    }
-    
-    // MARK: - Persistence
-    
-    private let balKey = "pg_balance"
-    private let invKey = "pg_inventory"
-    private let recKey = "pg_record"
-    
-    func save() {
-        UserDefaults.standard.set(balance, forKey: balKey)
-        UserDefaults.standard.set(recordPrice, forKey: recKey)
-        if let data = try? JSONEncoder().encode(inventory) {
-            UserDefaults.standard.set(data, forKey: invKey)
-        }
-    }
-    
-    func load() {
-        let b = UserDefaults.standard.integer(forKey: balKey)
-        balance = b == 0 ? 50_000 : b
-        recordPrice = UserDefaults.standard.integer(forKey: recKey)
-        if let data = UserDefaults.standard.data(forKey: invKey),
-           let items = try? JSONDecoder().decode([InventoryItem].self, from: data) {
-            inventory = items
-        }
-    }
-}
+            if free <= 0 { break

@@ -11,6 +11,7 @@ struct PlateGameApp: App {
                 .preferredColorScheme(.dark)
                 .statusBarHidden(true)
                 .persistentSystemOverlays(.hidden)
+                .ignoresSafeArea(.all)   // ← ВОТ ЭТА СТРОЧКА!
                 .onAppear { state.load() }
         }
     }

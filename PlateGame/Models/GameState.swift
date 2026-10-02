@@ -14,6 +14,8 @@ class GameState: ObservableObject {
     
     let spinCost = 3_000
     let sellPercent: Double = 0.80
+    let inventoryLimit = 500       // ← лимит инвентаря
+    let safeLimit = 5              // ← лимит сейфа
     
     private let spinDuration: Double = 0.5
     private let tickInterval: Double = 0.03
@@ -36,10 +38,12 @@ class GameState: ObservableObject {
     
     func spin() {
         guard !isSpinning, !isLocked, balance >= spinCost else { return }
+        // Лимит инвентаря
+        guard inventory.count < inventoryLimit else { return }
+        
         balance -= spinCost
         isSpinning = true
         
-        // Заранее генерируем финал
         let result = PlateGenerator.generate()
         let finalPlate = result.plate
         let finalRarity = result.rarity
@@ -76,7 +80,6 @@ class GameState: ObservableObject {
         }
         save()
         
-        // Блокируем для эпика/легендарки
         if rarity == .epic || rarity == .legendary {
             isLocked = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
@@ -108,12 +111,54 @@ class GameState: ObservableObject {
     func toggleSafe(_ item: InventoryItem) {
         if let idx = inventory.firstIndex(where: { $0.id == item.id }) {
             let old = inventory[idx]
+            let newSafe = !old.inSafe
+            
+            // Проверка лимита сейфа
+            if newSafe {
+                let currentSafeCount = inventory.filter { $0.inSafe }.count
+                guard currentSafeCount < safeLimit else { return }
+            }
+            
             inventory[idx] = InventoryItem(
                 id: old.id, plate: old.plate, price: old.price,
-                rarity: old.rarity, inSafe: !old.inSafe
+                rarity: old.rarity, inSafe: newSafe
             )
             save()
         }
+    }
+    
+    /// Переместить ВСЕ в сейф (до лимита)
+    func moveAllToSafe() {
+        let currentSafeCount = inventory.filter { $0.inSafe }.count
+        var free = safeLimit - currentSafeCount
+        guard free > 0 else { return }
+        
+        for i in inventory.indices {
+            if free <= 0 { break }
+            if !inventory[i].inSafe {
+                let old = inventory[i]
+                inventory[i] = InventoryItem(
+                    id: old.id, plate: old.plate, price: old.price,
+                    rarity: old.rarity, inSafe: true
+                )
+                free -= 1
+            }
+        }
+        save()
+    }
+    
+    /// Убрать ВСЁ из сейфа
+    func moveAllFromSafe() {
+        for i in inventory.indices {
+            if inventory[i].inSafe {
+                let old = inventory[i]
+                inventory[i] = InventoryItem(
+                    id: old.id, plate: old.plate, price: old.price,
+                    rarity: old.rarity, inSafe: false
+                )
+            }
+        }
+        save()
     }
     
     // MARK: - Persistence

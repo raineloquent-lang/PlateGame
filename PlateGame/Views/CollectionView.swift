@@ -25,6 +25,9 @@ struct CollectionView: View {
     var body: some View {
         ZStack {
             Color(white: 0.05)
+    .frame(width: UIScreen.main.bounds.width,
+           height: UIScreen.main.bounds.height + 500)
+    .offset(y: -250)
             
             VStack(spacing: 0) {
                 HStack {

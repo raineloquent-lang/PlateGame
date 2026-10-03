@@ -10,132 +10,136 @@ struct MainGameView: View {
     @State private var stopScale: CGFloat = 1.0
     
     var body: some View {
-        let shownPlate = state.isSpinning
-            ? (state.spinningPlate ?? state.currentPlate ?? PlateGenerator.randomPlate())
-            : (state.currentPlate ?? PlateGenerator.randomPlate())
+    let shownPlate = state.isSpinning
+        ? (state.spinningPlate ?? state.currentPlate ?? PlateGenerator.randomPlate())
+        : (state.currentPlate ?? PlateGenerator.randomPlate())
+    
+    let calc = PlatePricer.calculate(for: shownPlate, rarity: state.currentRarity)
+    let rarity = state.isSpinning ? Rarity.common : state.currentRarity
+    
+    // ═══ РАЗМЕР ЭКРАНА ═══
+    let screenWidth = UIScreen.main.bounds.width
+    let screenHeight = UIScreen.main.bounds.height
+    let safeTop: CGFloat = 60     // высота статус-бара + запас
+    let safeBottom: CGFloat = 40  // высота home-индикатора + запас
+    
+    ZStack(alignment: .top) {
+        // ═══ ФОН — ВЫХОДИТ ЗА ПРЕДЕЛЫ SAFE AREA ═══
+        LinearGradient(colors: rarity.backgroundGradient,
+                       startPoint: .top, endPoint: .bottom)
+            .frame(width: screenWidth, height: screenHeight + 200)
+            .offset(y: -100)      // ← СДВИГАЕМ ВВЕРХ, ЧТОБЫ ПЕРЕКРЫТЬ СТАТУС-БАР
+            .animation(.easeInOut(duration: 0.4), value: rarity)
         
-        let calc = PlatePricer.calculate(for: shownPlate, rarity: state.currentRarity)
-        let rarity = state.isSpinning ? Rarity.common : state.currentRarity
+        // ═══ ТАП ═══
+        Color.clear
+            .contentShape(Rectangle())
+            .frame(width: screenWidth, height: screenHeight + 200)
+            .offset(y: -100)
+            .onTapGesture {
+                guard !state.isSpinning,
+                      !state.isLocked,
+                      state.balance >= state.spinCost,
+                      state.inventory.count < state.inventoryLimit else { return }
+                hideBanner()
+                resetAnimations()
+                state.spin()
+            }
         
-        GeometryReader { geo in
-            ZStack(alignment: .top) {
-                // ═══ ФОН — на весь экран ═══
-                LinearGradient(colors: rarity.backgroundGradient,
-                               startPoint: .top, endPoint: .bottom)
-                    .frame(width: geo.size.width, height: geo.size.height)
-                    .animation(.easeInOut(duration: 0.4), value: rarity)
-                
-                // ═══ ТАП НА ВЕСЬ ЭКРАН ═══
-                Color.clear
-                    .contentShape(Rectangle())
-                    .frame(width: geo.size.width, height: geo.size.height)
-                    .onTapGesture {
-                        guard !state.isSpinning,
-                              !state.isLocked,
-                              state.balance >= state.spinCost,
-                              state.inventory.count < state.inventoryLimit else { return }
-                        hideBanner()
-                        resetAnimations()
-                        state.spin()
-                    }
-                
-                // ═══ КОНТЕНТ ═══
-                VStack(spacing: 0) {
-                    HeaderBar(balance: state.balance) { showCollection = true }
-                        .padding(.horizontal, 20)
-                        .padding(.top, 60)
-                    
-                    Spacer()
-                    
-                    if state.isSpinning {
-                        RarityBarSkeleton()
-                            .padding(.horizontal, 24)
-                            .padding(.bottom, 16)
-                    } else {
-                        RarityBar(rarity: rarity, price: calc.total)
-                            .padding(.horizontal, 24)
-                            .padding(.bottom, 16)
-                    }
-                    
-                    PlateView(plate: shownPlate)
-                        .scaleEffect(state.isSpinning ? 0.95 : stopScale)
-                        .animation(
-                            state.isSpinning
-                            ? .easeInOut(duration: 0.08)
-                            : .spring(response: 0.25, dampingFraction: 0.4),
-                            value: state.isSpinning
-                        )
-                        .padding(.horizontal, 24)
-                        .padding(.bottom, 16)
-                    
-                    if state.isSpinning {
-                        Text("...")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(Color.white.opacity(0.3))
-                            .padding(.bottom, 12)
-                    } else {
-                        Text("\(displayedPrice.formatted()) ₽")
-                            .font(.system(size: 24, weight: .bold, design: .rounded))
-                            .foregroundColor(rarity.color)
-                            .animation(.easeOut(duration: 0.4), value: displayedPrice)
-                            .padding(.bottom, 12)
-                    }
-                    
-                    VStack(spacing: 4) {
-                        if !state.isSpinning {
-                            ForEach(Array(calc.bonuses.enumerated()), id: \.offset) { idx, bonus in
-                                Text(bonus.title)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(Color(white: 0.65))
-                                    .multilineTextAlignment(.center)
-                                    .opacity(idx < visibleBonuses ? 1 : 0)
-                                    .offset(y: idx < visibleBonuses ? 0 : 20)
-                                    .animation(
-                                        .easeOut(duration: 0.35).delay(Double(idx) * 0.08),
-                                        value: visibleBonuses
-                                    )
-                            }
-                        }
-                    }
-                    .frame(minHeight: 80, alignment: .top)
+        // ═══ КОНТЕНТ — БЕЗ ОТСТУПА СВЕРХУ (фон уже покрыт) ═══
+        VStack(spacing: 0) {
+            HeaderBar(balance: state.balance) { showCollection = true }
+                .padding(.horizontal, 20)
+                .padding(.top, safeTop)      // ← отступ от верхнего края ДО хедера
+            
+            Spacer()
+            
+            if state.isSpinning {
+                RarityBarSkeleton()
                     .padding(.horizontal, 24)
-                    
-                    Spacer()
-                    
-                    Text(state.isSpinning
-                         ? "Крутится..."
-                         : (state.isLocked ? "Ждём..." : "Тапни в любом месте"))
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Color.white.opacity(0.4))
-                        .padding(.bottom, 50)
-                }
-                .frame(width: geo.size.width, height: geo.size.height)
-                
-                // ═══ БАННЕР РЕКОРДА ═══
-                if showBanner {
-                    RecordBanner(price: state.recordPrice) { hideBanner() }
-                        .padding(.horizontal)
-                        .padding(.top, 60)
-                        .offset(y: bannerOffset)
+                    .padding(.bottom, 16)
+            } else {
+                RarityBar(rarity: rarity, price: calc.total)
+                    .padding(.horizontal, 24)
+                    .padding(.bottom, 16)
+            }
+            
+            PlateView(plate: shownPlate)
+                .scaleEffect(state.isSpinning ? 0.95 : stopScale)
+                .animation(
+                    state.isSpinning
+                    ? .easeInOut(duration: 0.08)
+                    : .spring(response: 0.25, dampingFraction: 0.4),
+                    value: state.isSpinning
+                )
+                .padding(.horizontal, 24)
+                .padding(.bottom, 16)
+            
+            if state.isSpinning {
+                Text("...")
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(Color.white.opacity(0.3))
+                    .padding(.bottom, 12)
+            } else {
+                Text("\(displayedPrice.formatted()) ₽")
+                    .font(.system(size: 24, weight: .bold, design: .rounded))
+                    .foregroundColor(rarity.color)
+                    .animation(.easeOut(duration: 0.4), value: displayedPrice)
+                    .padding(.bottom, 12)
+            }
+            
+            VStack(spacing: 4) {
+                if !state.isSpinning {
+                    ForEach(Array(calc.bonuses.enumerated()), id: \.offset) { idx, bonus in
+                        Text(bonus.title)
+                            .font(.system(size: 14))
+                            .foregroundColor(Color(white: 0.65))
+                            .multilineTextAlignment(.center)
+                            .opacity(idx < visibleBonuses ? 1 : 0)
+                            .offset(y: idx < visibleBonuses ? 0 : 20)
+                            .animation(
+                                .easeOut(duration: 0.35).delay(Double(idx) * 0.08),
+                                value: visibleBonuses
+                            )
+                    }
                 }
             }
-            .frame(width: geo.size.width, height: geo.size.height)
+            .frame(minHeight: 80, alignment: .top)
+            .padding(.horizontal, 24)
+            
+            Spacer()
+            
+            Text(state.isSpinning
+                 ? "Крутится..."
+                 : (state.isLocked ? "Ждём..." : "Тапни в любом месте"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color.white.opacity(0.4))
+                .padding(.bottom, safeBottom)
         }
-        .ignoresSafeArea(.all)
-        .sheet(isPresented: $showCollection) {
-            CollectionView()
-                .environmentObject(state)
-        }
-        .onReceive(state.$lastRecordEvent) { event in
-            guard event != nil else { return }
-            showRecordBanner()
-        }
-        .onChange(of: state.isSpinning) { spinning in
-            if !spinning, let plate = state.currentPlate {
-                animateStop(for: plate)
-            }
+        .frame(width: screenWidth, height: screenHeight)
+        
+        if showBanner {
+            RecordBanner(price: state.recordPrice) { hideBanner() }
+                .padding(.horizontal)
+                .padding(.top, safeTop)
+                .offset(y: bannerOffset)
         }
     }
+    .frame(width: screenWidth, height: screenHeight)
+    .clipped()      // ← ОБРЕЗАЕМ ВСЁ, ЧТО ВЫШЛО ЗА ЭКРАН
+    .sheet(isPresented: $showCollection) {
+        CollectionView().environmentObject(state)
+    }
+    .onReceive(state.$lastRecordEvent) { event in
+        guard event != nil else { return }
+        showRecordBanner()
+    }
+    .onChange(of: state.isSpinning) { spinning in
+        if !spinning, let plate = state.currentPlate {
+            animateStop(for: plate)
+        }
+    }
+}
     
     // MARK: - Animations
     

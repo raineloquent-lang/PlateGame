@@ -11,6 +11,9 @@ struct PlateDetailView: View {
         
         ZStack {
             Color(white: 0.05)
+    .frame(width: UIScreen.main.bounds.width,
+           height: UIScreen.main.bounds.height + 500)
+    .offset(y: -250)
             
             ScrollView {
                 VStack(spacing: 0) {

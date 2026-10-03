@@ -50,7 +50,7 @@ LinearGradient(colors: rarity.backgroundGradient,
         VStack(spacing: 0) {
             HeaderBar(balance: state.balance) { showCollection = true }
                 .padding(.horizontal, 20)
-                .padding(.top, safeTop +40)      // ← отступ от верхнего края ДО хедера
+                .padding(.top, safeTop + 40)      // ← отступ от верхнего края ДО хедера
             
             Spacer()
             
@@ -114,7 +114,7 @@ LinearGradient(colors: rarity.backgroundGradient,
                  : (state.isLocked ? "Ждём..." : "Тапни в любом месте"))
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(Color.white.opacity(0.4))
-                .padding(.bottom, safeBottom +20)
+                .padding(.bottom, safeBottom + 20)
         }
         .frame(width: screenWidth, height: screenHeight)
         

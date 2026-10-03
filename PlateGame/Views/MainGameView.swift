@@ -25,17 +25,17 @@ struct MainGameView: View {
     
     ZStack(alignment: .top) {
         // ═══ ФОН — ВЫХОДИТ ЗА ПРЕДЕЛЫ SAFE AREA ═══
-        LinearGradient(colors: rarity.backgroundGradient,
-                       startPoint: .top, endPoint: .bottom)
-            .frame(width: screenWidth, height: screenHeight + 200)
-            .offset(y: -100)      // ← СДВИГАЕМ ВВЕРХ, ЧТОБЫ ПЕРЕКРЫТЬ СТАТУС-БАР
-            .animation(.easeInOut(duration: 0.4), value: rarity)
+LinearGradient(colors: rarity.backgroundGradient,
+               startPoint: .top, endPoint: .bottom)
+    .frame(width: screenWidth, height: screenHeight + 500)
+    .offset(y: -250)
+    .animation(.easeInOut(duration: 0.4), value: rarity)
         
         // ═══ ТАП ═══
         Color.clear
             .contentShape(Rectangle())
-            .frame(width: screenWidth, height: screenHeight + 200)
-            .offset(y: -100)
+            .frame(width: screenWidth, height: screenHeight + 500)
+            .offset(y: -250)
             .onTapGesture {
                 guard !state.isSpinning,
                       !state.isLocked,
@@ -50,7 +50,7 @@ struct MainGameView: View {
         VStack(spacing: 0) {
             HeaderBar(balance: state.balance) { showCollection = true }
                 .padding(.horizontal, 20)
-                .padding(.top, safeTop)      // ← отступ от верхнего края ДО хедера
+                .padding(.top, safeTop +40)      // ← отступ от верхнего края ДО хедера
             
             Spacer()
             
@@ -114,7 +114,7 @@ struct MainGameView: View {
                  : (state.isLocked ? "Ждём..." : "Тапни в любом месте"))
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(Color.white.opacity(0.4))
-                .padding(.bottom, safeBottom)
+                .padding(.bottom, safeBottom +20)
         }
         .frame(width: screenWidth, height: screenHeight)
         
